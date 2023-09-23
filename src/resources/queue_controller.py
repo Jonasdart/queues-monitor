@@ -1,5 +1,4 @@
 from datetime import datetime
-import uuid
 from typing import List, Optional
 from .spec import load_spec
 from resources.database import db, Query
@@ -86,7 +85,7 @@ def group_by_timestamp(sources: dict):
 
 
 def get_queue_definition_by_id(queue_id: str) -> QueueDefinition:
-    for queue in queues_definitions:
+    for queue in load_queues_definitions():
         if queue.id == queue_id:
             return queue
 
