@@ -1,0 +1,8 @@
+google-cloud-pubsub==2.18.4
+pydantic==2.3.0
+pyperclip==1.8.2
+python-dotenv==1.0.0
+streamlit==1.27.0
+streamlit-autorefresh==1.0.1
+streamlit-vis-timeline==0.3.0
+tinydb==4.8.0
