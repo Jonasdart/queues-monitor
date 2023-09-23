@@ -17,6 +17,11 @@ def load_queues_definitions() -> List[QueueDefinition]:
     return queues_definitions
 
 
+def delete_by_timestamp(timestamp: float):
+    for table in [db.table(_) for _ in db.tables()]:
+        table.remove(Query().timestamp <= timestamp)
+
+
 def monitore(queue: QueueDefinition):
     table = db.table(queue.id)
 
