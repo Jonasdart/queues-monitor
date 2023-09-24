@@ -3,5 +3,8 @@
         "foo": {
             "bar": "bor"
         }
+    },
+    "defaults": {
+        "expanded": false
     }
 }

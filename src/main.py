@@ -25,7 +25,7 @@ def queues_data_view(
 
     grouped_data = group_by_parameter(messages, field)
 
-    expanded = True
+    expanded = configs["defaults"]["expanded"]
     for item in grouped_data:
         if item:
             with st.expander(item, expanded=expanded):
