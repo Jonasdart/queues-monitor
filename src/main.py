@@ -7,7 +7,7 @@ from streamlit_autorefresh import st_autorefresh
 from resources.queue_controller import reprocess_message_by_id, load_queues_definitions
 
 st.set_page_config(layout="wide")
-st_autorefresh(interval=10000, limit=1000, key="fizzbuzzcounter")
+st_autorefresh(interval=10000)
 
 load_dotenv()
 configs = load_configs()
@@ -34,14 +34,17 @@ def queues_data_view(
                     group_by_timestamp(items),
                     groups=[],
                     options={},
-                    height="300px",
+                    height="500px",
                 )
                 st.subheader("Selected Message")
+
                 try:
                     selected_message = timeline["id"]
                     pyperclip.copy(selected_message)
+                    st.toast("Copied!", icon="✅")
                 except TypeError:
-                    selected_message = None
+                    selected_message = "🖱️ Click on timeline items to select them"
+
                 st.code(selected_message)
 
                 st.subheader("All Messages")
