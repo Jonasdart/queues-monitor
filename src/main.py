@@ -28,8 +28,9 @@ def queues_data_view(
     expanded = configs["defaults"]["expanded"]
     for item in grouped_data:
         if item:
-            with st.expander(item, expanded=expanded):
-                items = group_by_parameter(grouped_data[item], sub_field, scape)
+            items = group_by_parameter(grouped_data[item], sub_field, scape)
+            title = f"{item} 📌 {list(items.keys())[-1]}"
+            with st.expander(title, expanded=expanded):
                 timeline = st_timeline(
                     group_by_timestamp(items),
                     groups=[],
