@@ -10,13 +10,17 @@ st.set_page_config(layout="wide")
 st_autorefresh(interval=10000)
 
 load_dotenv()
-configs = load_configs()
+global_configs = load_configs()
 
 pages = {}
 
 
 def queues_data_view(
-    messages: list, field: str, sub_field: str, scape: Optional[str] = ""
+    messages: list,
+    field: str,
+    sub_field: str,
+    scape: Optional[str] = "",
+    configs: Optional[dict] = {},
 ):
     from resources.queue_controller import group_by_parameter, group_by_timestamp
     import streamlit as st
@@ -25,14 +29,17 @@ def queues_data_view(
 
     grouped_data = group_by_parameter(messages, field)
 
-    expanded = configs["defaults"]["expanded"]
+    expanded = global_configs["defaults"]["expanded"]
     for item in grouped_data:
         if item:
             items = group_by_parameter(grouped_data[item], sub_field, scape)
-            title = f"{item} 📌 {list(items.keys())[-1]}"
+            title = item
+            if configs.get("lastMessageOnTitle"):
+                title = f"{item} 📌 {list(items.keys())[-1]}"
+
             with st.expander(title, expanded=expanded):
                 timeline = st_timeline(
-                    group_by_timestamp(items),
+                    group_by_timestamp(items, sub_key=scape, configs=configs),
                     groups=[],
                     options={},
                     height="500px",
@@ -41,6 +48,7 @@ def queues_data_view(
 
                 try:
                     selected_message = timeline["id"]
+                    timeline = None
                     pyperclip.copy(selected_message)
                     st.toast("Copied!", icon="✅")
                 except TypeError:
@@ -59,25 +67,40 @@ def queues_data_view(
         reprocess_message_by_id(reprocess)
 
 
-fields = {}
+queues = {}
 for queue in load_queues_definitions():
-    for field in configs["fields"]:
+    for field in global_configs["fields"]:
         try:
-            fields[queue.alias].append({"queue_id": queue.id, "field_name": field})
+            queues[queue.alias].append(
+                {
+                    "queue_id": queue.id,
+                    "field_name": field,
+                    "configs": global_configs["fields"][field].get("configs", {}),
+                }
+            )
         except (TypeError, KeyError):
-            fields[queue.alias] = [{"queue_id": queue.id, "field_name": field}]
+            queues[queue.alias] = [
+                {
+                    "queue_id": queue.id,
+                    "field_name": field,
+                    "configs": global_configs["fields"][field].get("configs", {}),
+                }
+            ]
 
-for _field in fields:
-    for field in fields[_field]:
+for queue in queues:
+    for field in queues[queue]:
         messages = get_all_messages(field["queue_id"])
-        sub_field, scape = list(configs["fields"][field["field_name"]].items())[0]
+        field_definition = list(global_configs["fields"][field["field_name"]].items())
+        sub_field, scape = field_definition[0]
 
-        page_name = f"{_field} -> {field['field_name']} -> {sub_field}"
+        page_name = f"{queue} -> {field['field_name']} -> {sub_field}"
+
         pages[page_name] = {
             "page": queues_data_view,
             "field": field["field_name"],
             "subField": sub_field,
             "scape": scape,
+            "configs": field["configs"],
             "messages": messages,
         }
 
@@ -88,4 +111,5 @@ pages[page_name]["page"](
     pages[page_name]["field"],
     pages[page_name]["subField"],
     pages[page_name]["scape"],
+    pages[page_name]["configs"],
 )

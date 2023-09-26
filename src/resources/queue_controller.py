@@ -70,19 +70,47 @@ def group_by_parameter(sources: list, parameter: str, scape: Optional[str] = "")
     return grouped
 
 
-def group_by_timestamp(sources: dict):
+def group_by_timestamp(
+    sources: dict, sub_key: Optional[str] = None, configs: Optional[dict] = {}
+):
     grouped = []
-    for data in sources:
-        for _ in sources[data]:
+    sources = list(sources.items())
+    for group_index, data in enumerate(sources):
+        for index, _ in enumerate(data[1]):
+            item_title = data
+            if sub_key:
+                item_title = f"{data[0]}👉{_[sub_key]}"
+
             if "datetime" not in _:
                 _["datetime"] = datetime.fromtimestamp(_["timestamp"]).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
+
+                if configs.get("range"):
+                    try:
+                        _["final_datetime"] = data[1][index + 1]["timestamp"]
+                        _["final_datetime"] = datetime.fromtimestamp(
+                            _["final_datetime"]
+                        ).strftime("%Y-%m-%d %H:%M:%S")
+                    except IndexError:
+                        try:
+                            print(sources[group_index + 1][1])
+                            _["final_datetime"] = sources[group_index + 1][1][0][
+                                "timestamp"
+                            ]
+                            _["final_datetime"] = datetime.fromtimestamp(
+                                _["final_datetime"]
+                            ).strftime("%Y-%m-%d %H:%M:%S")
+                        except IndexError:
+                            ...
+
             grouped.append(
                 {
-                    "content": data,
+                    "content": item_title,
                     "start": _["datetime"],
+                    "end": _.get("final_datetime"),
                     "id": _["id"],
+                    "type": "range" if _.get("final_datetime") else "box",
                 }
             )
 

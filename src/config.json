@@ -1,7 +1,11 @@
 {
     "fields": {
         "foo": {
-            "bar": "bor"
+            "bar": "bor",
+            "configs": {
+                "range": false,
+                "lastMessageOnTitle": false
+            }
         }
     },
     "defaults": {
