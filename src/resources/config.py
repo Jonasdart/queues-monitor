@@ -1,4 +1,9 @@
 import json
+import os
+from dotenv import load_dotenv
+
+if os.environ.get("environ_name") != "prod":
+    load_dotenv()
 
 
 def load_configs() -> dict:

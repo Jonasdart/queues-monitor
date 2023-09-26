@@ -1,7 +1,6 @@
 from resources.database import get_all_messages
 from typing import Optional
 from resources.config import load_configs
-from dotenv import load_dotenv
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from resources.queue_controller import reprocess_message_by_id, load_queues_definitions
@@ -9,7 +8,6 @@ from resources.queue_controller import reprocess_message_by_id, load_queues_defi
 st.set_page_config(layout="wide")
 st_autorefresh(interval=10000)
 
-load_dotenv()
 global_configs = load_configs()
 
 pages = {}

@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import sleep
-from resources.queue_controller import delete_by_timestamp, monitore, load_queues_definitions
-from dotenv import load_dotenv
-
-load_dotenv()
+from resources.queue_controller import (
+    delete_by_timestamp,
+    monitore,
+    load_queues_definitions,
+)
 
 
 def start_consume():
@@ -15,6 +16,7 @@ def clean_oldest_queues():
     for queue in load_queues_definitions():
         range = datetime.now() - queue.config.range
         delete_by_timestamp(range.timestamp())
+
 
 if __name__ == "__main__":
     while True:
