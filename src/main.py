@@ -6,7 +6,11 @@ from streamlit_autorefresh import st_autorefresh
 from resources.queue_controller import reprocess_message_by_id, load_queues_definitions
 
 st.set_page_config(layout="wide")
-st_autorefresh(interval=10000)
+
+streaming_activate = st.toggle("Streaming")
+
+if streaming_activate:
+    st_autorefresh(interval=10000)
 
 global_configs = load_configs()
 
