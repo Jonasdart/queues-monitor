@@ -5,6 +5,25 @@ from resources.database import db, Query
 from models.queue import QueueDefinition
 import json
 import logging
+import functools
+
+
+def ignore_unhashable(func):
+    uncached = func.__wrapped__
+    attributes = functools.WRAPPER_ASSIGNMENTS + ("cache_info", "cache_clear")
+
+    @functools.wraps(func, assigned=attributes)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except TypeError as error:
+            if "unhashable type" in str(error):
+                return uncached(*args, **kwargs)
+            raise
+
+    wrapper.__uncached__ = uncached
+    return wrapper
+
 
 logging.basicConfig(level="INFO")
 
@@ -59,7 +78,9 @@ def monitore(queue: QueueDefinition):
     table.insert_multiple(messages)
 
 
-def group_by_parameter(sources: list, parameter: str, scape: Optional[str] = ""):
+@ignore_unhashable
+@functools.lru_cache(maxsize=128, typed=True)
+def group_by_parameter(sources: tuple, parameter: str, scape: Optional[str] = ""):
     grouped = {}
     for data in sources:
         try:
@@ -70,6 +91,8 @@ def group_by_parameter(sources: list, parameter: str, scape: Optional[str] = "")
     return grouped
 
 
+@ignore_unhashable
+@functools.lru_cache(maxsize=128, typed=True)
 def group_by_timestamp(
     sources: dict, sub_key: Optional[str] = None, configs: Optional[dict] = {}
 ):
