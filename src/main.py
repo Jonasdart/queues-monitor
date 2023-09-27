@@ -12,13 +12,13 @@ streaming_activate = st.toggle("Streaming")
 if streaming_activate:
     st_autorefresh(interval=10000)
     st.cache_data.clear()
+    st.cache_resource.clear()
 
 global_configs = load_configs()
 
 pages = {}
 
 
-@st.cache_data(experimental_allow_widgets=True)
 def queues_data_view(
     messages: list,
     field: str,
@@ -31,19 +31,23 @@ def queues_data_view(
     from streamlit_timeline import st_timeline
     import pyperclip
 
-    grouped_data = group_by_parameter(messages, field)
+    grouped_data = st.cache_resource(group_by_parameter)(messages, field)
 
     expanded = global_configs["defaults"]["expanded"]
     for item in grouped_data:
         if item:
-            items = group_by_parameter(grouped_data[item], sub_field, scape)
+            items = st.cache_resource(group_by_parameter)(
+                grouped_data[item], sub_field, scape
+            )
             title = item
             if configs.get("lastMessageOnTitle"):
                 title = f"{item} 📌 {list(items.keys())[-1]}"
 
             with st.expander(title, expanded=expanded):
                 timeline = st_timeline(
-                    group_by_timestamp(items, sub_key=scape, configs=configs),
+                    st.cache_resource(group_by_timestamp)(
+                        items, sub_key=scape, configs=configs
+                    ),
                     groups=[],
                     options={},
                     height="500px",
