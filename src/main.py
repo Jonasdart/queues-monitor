@@ -11,12 +11,14 @@ streaming_activate = st.toggle("Streaming")
 
 if streaming_activate:
     st_autorefresh(interval=10000)
+    st.cache_data.clear()
 
 global_configs = load_configs()
 
 pages = {}
 
 
+@st.cache_data(experimental_allow_widgets=True)
 def queues_data_view(
     messages: list,
     field: str,
