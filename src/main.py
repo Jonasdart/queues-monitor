@@ -8,11 +8,15 @@ from resources.queue_controller import reprocess_message_by_id, load_queues_defi
 st.set_page_config(layout="wide")
 
 streaming_activate = st.toggle("Streaming")
+show_timeline = st.toggle("Exibir Linha do Tempo")
+show_messages = st.toggle("Exibir Lista de Mensagens")
 
 if streaming_activate:
     st_autorefresh(interval=10000)
     st.cache_data.clear()
     st.cache_resource.clear()
+
+filter = st.text_input("Filter")
 
 global_configs = load_configs()
 
@@ -39,33 +43,36 @@ def queues_data_view(
             items = st.cache_resource(group_by_parameter)(
                 grouped_data[item], sub_field, scape
             )
-            title = item
+            title = f"[{len(items)}] {item}"
             if configs.get("lastMessageOnTitle"):
-                title = f"{item} 📌 {list(items.keys())[-1]}"
+                title = f"{title} 📌 {list(items.keys())[-1]}"
 
             with st.expander(title, expanded=expanded):
-                timeline = st_timeline(
-                    st.cache_resource(group_by_timestamp)(
-                        items, sub_key=scape, configs=configs
-                    ),
-                    groups=[],
-                    options={},
-                    height="500px",
-                )
-                st.subheader("Selected Message")
+                if show_timeline:                    
+                    timeline = st_timeline(
+                        st.cache_resource(group_by_timestamp)(
+                            items, sub_key=scape, configs=configs
+                        ),
+                        groups=[],
+                        options={},
+                        height="500px",
+                    )
+                    st.subheader("Selected Message")
 
-                try:
-                    selected_message = timeline["id"]
-                    timeline = None
-                    pyperclip.copy(selected_message)
-                    st.toast("Copied!", icon="✅")
-                except TypeError:
-                    selected_message = "🖱️ Click on timeline items to select them"
+                    try:
+                        selected_message = timeline["id"]
+                        timeline = None
+                        pyperclip.copy(selected_message)
+                        st.toast("Copied!", icon="✅")
+                    except TypeError:
+                        selected_message = "🖱️ Click on timeline items to select them"
 
-                st.code(selected_message)
-
-                st.subheader("All Messages")
-                st.json(items, expanded=False)
+                    st.code(selected_message)
+                if show_messages:
+                    st.subheader("All Messages")
+                    st.json(items, expanded=False)
+                else:
+                    st.subheader(f"{len(items)} mensagens processadas")
 
             if expanded:
                 expanded = False
@@ -97,7 +104,7 @@ for queue in load_queues_definitions():
 
 for queue in queues:
     for field in queues[queue]:
-        messages = get_all_messages(field["queue_id"])
+        messages = get_all_messages(field["queue_id"], field["field_name"], filter)
         field_definition = list(global_configs["fields"][field["field_name"]].items())
         sub_field, scape = field_definition[0]
 

@@ -7,7 +7,11 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
-    software-properties-common 
+    software-properties-common  \
+    xclip xvfb
+
+RUN Xvfb :99 -screen 0 1280x720x16 &
+RUN export DISPLAY=:99
 
 COPY src .
 

@@ -20,6 +20,6 @@ def clean_oldest_queues():
 
 if __name__ == "__main__":
     while True:
-        start_consume()
         clean_oldest_queues()
+        start_consume()
         sleep(1)

@@ -5,6 +5,11 @@ from resources.database import db, Query
 from models.queue import QueueDefinition
 import json
 import logging
+import os
+from dotenv import load_dotenv
+
+if os.environ.get("environ_name") != "prod":
+    load_dotenv()
 
 logging.basicConfig(level="INFO")
 
@@ -49,14 +54,15 @@ def monitore(queue: QueueDefinition):
             continue
 
         logging.info("Nova Mensagem identificada")
-        logging.info(message_data)
 
-        messages.append(message_data)
+        table.insert(message_data)
+        if len(ack_ids) % 20 == 0:
+            client.acknowledge(subscription=queue.pull, ack_ids=ack_ids)
 
     if ack_ids:
         client.acknowledge(subscription=queue.pull, ack_ids=ack_ids)
 
-    table.insert_multiple(messages)
+    # table.insert_multiple(messages)
 
 
 def group_by_parameter(sources: tuple, parameter: str, scape: Optional[str] = ""):

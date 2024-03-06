@@ -11,8 +11,6 @@ services:
       - type: bind
         source: ./src
         target: /app
-    environment:
-      - environ_name=prod
   queue_visualizate_data_ingest:
     build:
       context: .
@@ -20,5 +18,3 @@ services:
     entrypoint: ["python", "scheduled_jobs.py"]
     volumes:
       - ./src/:/app
-    environment:
-      - environ_name=prod
